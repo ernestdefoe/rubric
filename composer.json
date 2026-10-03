@@ -1,0 +1,50 @@
+{
+    "name": "ernestdefoe/rubric",
+    "description": "Thread prefixes for Flarum 2: a short coloured label before a discussion's title — [Rumor], [Official], [Solved] — chosen when the discussion is started, separate from tags.",
+    "keywords": [
+        "flarum",
+        "flarum-extension",
+        "prefix",
+        "thread-prefix",
+        "label"
+    ],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "homepage": "https://github.com/ernestdefoe/rubric",
+    "support": {
+        "issues": "https://github.com/ernestdefoe/rubric/issues",
+        "source": "https://github.com/ernestdefoe/rubric"
+    },
+    "authors": [
+        {
+            "name": "Ernest Defoe",
+            "email": "ernestdefoe@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "flarum/core": "^2.0"
+    },
+    "suggest": {
+        "flarum/tags": "Limit a prefix to some tags, and require a prefix in others."
+    },
+    "autoload": {
+        "psr-4": {
+            "Ernestdefoe\\Rubric\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Rubric",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-bookmark",
+                "backgroundColor": "#b45309",
+                "color": "#fff"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
