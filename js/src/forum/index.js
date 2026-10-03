@@ -1,8 +1,10 @@
 import app from 'flarum/forum/app';
-import { extend } from 'flarum/common/extend';
+import { extend, override } from 'flarum/common/extend';
 import Button from 'flarum/common/components/Button';
 import Dropdown from 'flarum/common/components/Dropdown';
+import Icon from 'flarum/common/components/Icon';
 import DiscussionControls from 'flarum/forum/utils/DiscussionControls';
+import DiscussionList from 'flarum/forum/components/DiscussionList';
 import DiscussionListState from 'flarum/forum/states/DiscussionListState';
 import GlobalSearchState from 'flarum/forum/states/GlobalSearchState';
 import ChangePrefixModal from './components/ChangePrefixModal';
@@ -137,7 +139,6 @@ app.initializers.add('ernestdefoe-rubric', () => {
         <Dropdown
           className="RubricPicker"
           buttonClassName="Button Button--ua-reset RubricPicker-button"
-          caretIcon={null}
           accessibleToggleLabel={t('choose_prefix')}
           label={
             current ? (
@@ -145,6 +146,7 @@ app.initializers.add('ernestdefoe-rubric', () => {
             ) : (
               <span className={'RubricLabel RubricLabel--empty' + (required ? ' RubricLabel--required' : '')}>
                 {required ? t('choose_prefix_required') : t('choose_prefix')}
+                <Icon name="fas fa-caret-down" className="RubricLabel-caret" />
               </span>
             )
           }
@@ -213,8 +215,28 @@ app.initializers.add('ernestdefoe-rubric', () => {
       }
     });
 
-    // The removable "Prefix: Rumor" chip while filtering.
-    extend('flarum/forum/components/IndexPage', 'viewItems', function (items) {
+    // The server preloads the first page of the list without knowing about
+    // ?prefix=, so on a fresh load that page is the unfiltered one. Fetch
+    // instead when a prefix is asked for.
+    override(DiscussionListState.prototype, 'loadPage', function (original, ...args) {
+      if (this.params.prefix && app.data.apiDocument) app.data.apiDocument = null;
+      return original(...args);
+    });
+
+    // A theme may swap the home page's list for something else (Bespoke's
+    // category index does). Filtered to a prefix, the list is the point, so
+    // put it back.
+    extend('flarum/forum/components/IndexPage', 'contentItems', function (items) {
+      if (!app.search.state.params().prefix || items.has('discussionList')) return;
+
+      items.has('bespoke-categories') && items.remove('bespoke-categories');
+      items.add('discussionList', <DiscussionList state={app.discussions} />, 90);
+    });
+
+    // The removable "Prefix: Rumor" chip while filtering. Its own row above
+    // the list rather than a toolbar item: themes hide or rebuild the toolbar
+    // (Bespoke does), and the chip is the only way back out of the filter.
+    extend('flarum/forum/components/IndexPage', 'contentItems', function (items) {
       const slug = app.search.state.params().prefix;
       if (!slug) return;
 
@@ -222,17 +244,19 @@ app.initializers.add('ernestdefoe-rubric', () => {
 
       items.add(
         'rubricFilter',
-        <span className="RubricChip">
-          <span className="RubricChip-text">{t('filter_chip')}</span>
-          {prefix ? prefixLabel(prefix) : <span className="RubricLabel RubricLabel--empty">{slug}</span>}
-          <Button
-            className="Button Button--icon Button--link RubricChip-remove"
-            icon="fas fa-times"
-            aria-label={app.translator.trans('ernestdefoe-rubric.forum.filter_clear', {}, true)}
-            onclick={() => filterTo(null)}
-          />
-        </span>,
-        -10
+        <div className="RubricFilterBar">
+          <span className="RubricChip">
+            <span className="RubricChip-text">{t('filter_chip')}</span>
+            {prefix ? prefixLabel(prefix) : <span className="RubricLabel RubricLabel--empty">{slug}</span>}
+            <Button
+              className="Button Button--icon Button--link RubricChip-remove"
+              icon="fas fa-times"
+              aria-label={app.translator.trans('ernestdefoe-rubric.forum.filter_clear', {}, true)}
+              onclick={() => filterTo(null)}
+            />
+          </span>
+        </div>,
+        95
       );
     });
   });

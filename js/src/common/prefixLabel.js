@@ -1,5 +1,5 @@
 import app from 'flarum/common/app';
-import icon from 'flarum/common/helpers/icon';
+import Icon from 'flarum/common/components/Icon';
 import classList from 'flarum/common/utils/classList';
 
 /**
@@ -41,7 +41,7 @@ export default function prefixLabel(prefix, attrs = {}) {
       onkeydown={onclick ? (e) => (e.key === 'Enter' || e.key === ' ') && onclick(e) : undefined}
       {...rest}
     >
-      {prefix.icon ? icon(prefix.icon, { className: 'RubricLabel-icon' }) : null}
+      {prefix.icon ? <Icon name={prefix.icon} className="RubricLabel-icon" /> : null}
       <span className="RubricLabel-text">{prefix.name}</span>
     </span>
   );

@@ -46,6 +46,8 @@ ernestdefoe-rubric:
     saved: Saved.
     loading_tags: Loading tags…
     no_tags: There are no tags yet.
+    tag_search_placeholder: Type to find a tag…
+    tag_search_none: No tags match.
     required_heading: Require a prefix
     required_help: "Starting a discussion in any of these tags needs a prefix. (Only when the member has a prefix they're allowed to choose there.)"
     save_required_button: Save

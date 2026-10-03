@@ -41,6 +41,11 @@
     font-weight: 600;
   }
 
+  .RubricLabel-caret {
+    font-size: 0.9em;
+    opacity: 0.8;
+  }
+
   &--required {
     color: var(--text-color);
     border-color: var(--muted-color);
@@ -62,10 +67,23 @@
   display: inline-block;
   vertical-align: middle;
 
+  margin-right: 15px;
+
   .RubricPicker-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 0;
     font-size: 14px;
     line-height: 1.5;
+    background: transparent !important;
+    color: var(--muted-color);
+
+    // The label is the control; a separate caret beside it reads as a
+    // second button.
+    .Button-caret {
+      display: none;
+    }
   }
 
   .RubricLabel {
@@ -80,6 +98,10 @@
 }
 
 // "Prefix: Rumor ×" while the list is filtered.
+.RubricFilterBar {
+  margin: 0 0 14px;
+}
+
 .RubricChip {
   display: inline-flex;
   align-items: center;

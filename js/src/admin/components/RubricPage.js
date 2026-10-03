@@ -2,7 +2,7 @@ import app from 'flarum/admin/app';
 import ExtensionPage from 'flarum/admin/components/ExtensionPage';
 import Button from 'flarum/common/components/Button';
 import Switch from 'flarum/common/components/Switch';
-import icon from 'flarum/common/helpers/icon';
+import Icon from 'flarum/common/components/Icon';
 import classList from 'flarum/common/utils/classList';
 import extractText from 'flarum/common/utils/extractText';
 import Stream from 'flarum/common/utils/Stream';
@@ -108,7 +108,7 @@ export default class RubricPage extends ExtensionPage {
             {this.editing && this.editing.id === null ? (
               this.editor()
             ) : (
-              <Button className="Button Button--primary RubricAdmin-add" icon="fas fa-plus" onclick={() => (this.editing = blank())} disabled={!!this.editing}>
+              <Button className="Button Button--primary RubricAdmin-add" icon="fas fa-plus" onclick={() => this.open(blank())} disabled={!!this.editing}>
                 {t('add_button')}
               </Button>
             )}
@@ -132,24 +132,29 @@ export default class RubricPage extends ExtensionPage {
     return (
       <li key={p.id} data-id={p.id} className="RubricAdmin-row">
         <span className="RubricAdmin-handle" title={extractText(t('drag_tooltip'))}>
-          {icon('fas fa-grip-vertical')}
+          {<Icon name="fas fa-grip-vertical" />}
         </span>
         <span className="RubricAdmin-preview">{prefixLabel(p)}</span>
         <span className="RubricAdmin-meta">
           <code>?prefix={p.slug}</code>
           {p.staffOnly ? (
             <span className="RubricAdmin-badge">
-              {icon('fas fa-shield-alt')} {t('staff_only_badge')}
+              {<Icon name="fas fa-shield-alt" />} {t('staff_only_badge')}
             </span>
           ) : null}
           <span className="RubricAdmin-where">{this.whereText(p)}</span>
         </span>
         <span className="RubricAdmin-actions">
-          <Button className="Button Button--icon Button--link" icon="fas fa-pencil-alt" aria-label={extractText(t('edit_button'))} onclick={() => (this.editing = { ...p, icon: p.icon || '', tagIds: (p.tagIds || []).map(String) })} disabled={!!this.editing} />
+          <Button className="Button Button--icon Button--link" icon="fas fa-pencil-alt" aria-label={extractText(t('edit_button'))} onclick={() => this.open({ ...p, icon: p.icon || '', tagIds: (p.tagIds || []).map(String) })} disabled={!!this.editing} />
           <Button className="Button Button--icon Button--link RubricAdmin-delete" icon="fas fa-trash-alt" aria-label={extractText(t('delete_button'))} onclick={() => this.remove(p)} disabled={!!this.editing || this.busy} />
         </span>
       </li>
     );
+  }
+
+  open(draft) {
+    this.tagQuery = { ...(this.tagQuery || {}), editor: '' };
+    this.editing = draft;
   }
 
   whereText(p) {
@@ -227,7 +232,7 @@ export default class RubricPage extends ExtensionPage {
           {this.tagsEnabled() ? (
             <div className="Form-group">
               <label>{t('tags_label')}</label>
-              {this.tagPicker(d.tagIds, (ids) => (d.tagIds = ids))}
+              {this.tagPicker(d.tagIds, (ids) => (d.tagIds = ids), 'editor')}
               <p className="helpText">{t('tags_help')}</p>
             </div>
           ) : null}
@@ -252,29 +257,54 @@ export default class RubricPage extends ExtensionPage {
     );
   }
 
-  tagPicker(selected, onchange) {
+  /**
+   * Choosing tags. A forum can have hundreds, so past a handful the chosen
+   * ones show as chips and the rest are found by typing.
+   */
+  tagPicker(selected, onchange, key) {
     if (this.tags === null) return <p className="helpText">{t('loading_tags')}</p>;
     if (!this.tags.length) return <p className="helpText">{t('no_tags')}</p>;
 
     const ids = selected.map(String);
+    const chip = (tag) => {
+      const on = ids.includes(tag.id);
+      return (
+        <button
+          type="button"
+          className={classList('RubricAdmin-tag', on && 'active')}
+          style={{ '--tag-color': tag.color || 'var(--muted-color)' }}
+          aria-pressed={on ? 'true' : 'false'}
+          onclick={() => onchange(on ? ids.filter((id) => id !== tag.id) : [...ids, tag.id])}
+        >
+          {on ? <Icon name="fas fa-check" /> : <span className="RubricAdmin-tagDot" />}
+          {tag.name}
+          {on && this.tags.length > 24 ? <Icon name="fas fa-times" className="RubricAdmin-tagRemove" /> : null}
+        </button>
+      );
+    };
+
+    if (this.tags.length <= 24) return <div className="RubricAdmin-tags">{this.tags.map(chip)}</div>;
+
+    this.tagQuery = this.tagQuery || {};
+    const q = (this.tagQuery[key] || '').trim().toLowerCase();
+    const chosen = this.tags.filter((tag) => ids.includes(tag.id));
+    const matches = q ? this.tags.filter((tag) => !ids.includes(tag.id) && tag.name.toLowerCase().includes(q)).slice(0, 12) : [];
 
     return (
-      <div className="RubricAdmin-tags">
-        {this.tags.map((tag) => {
-          const on = ids.includes(tag.id);
-          return (
-            <button
-              type="button"
-              className={classList('RubricAdmin-tag', on && 'active', tag.parent && 'RubricAdmin-tag--child')}
-              style={{ '--tag-color': tag.color || 'var(--muted-color)' }}
-              aria-pressed={on ? 'true' : 'false'}
-              onclick={() => onchange(on ? ids.filter((id) => id !== tag.id) : [...ids, tag.id])}
-            >
-              {on ? icon('fas fa-check') : <span className="RubricAdmin-tagDot" />}
-              {tag.name}
-            </button>
-          );
-        })}
+      <div className="RubricAdmin-tagPicker">
+        {chosen.length ? <div className="RubricAdmin-tags">{chosen.map(chip)}</div> : null}
+        <input
+          className="FormControl RubricAdmin-tagSearch"
+          type="search"
+          placeholder={extractText(t('tag_search_placeholder'))}
+          value={this.tagQuery[key] || ''}
+          oninput={(e) => (this.tagQuery[key] = e.target.value)}
+        />
+        {q ? (
+          <div className="RubricAdmin-tags RubricAdmin-tagMatches">
+            {matches.length ? matches.map(chip) : <span className="helpText">{t('tag_search_none')}</span>}
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -284,10 +314,14 @@ export default class RubricPage extends ExtensionPage {
       <section className="RubricAdmin-section">
         <h3>{t('required_heading')}</h3>
         <p className="helpText">{t('required_help')}</p>
-        {this.tagPicker(this.required(), (ids) => {
-          this.required(ids);
-          this.requiredDirty = true;
-        })}
+        {this.tagPicker(
+          this.required(),
+          (ids) => {
+            this.required(ids);
+            this.requiredDirty = true;
+          },
+          'required'
+        )}
         <Button className="Button Button--primary RubricAdmin-saveRequired" loading={this.savingRequired} disabled={!this.requiredDirty} onclick={() => this.saveRequired()}>
           {t('save_required_button')}
         </Button>

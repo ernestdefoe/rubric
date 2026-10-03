@@ -31,11 +31,19 @@ class PrefixFilter implements FilterInterface
 
         // The subquery goes through the query builder, so the table prefix is
         // applied to rubric_prefixes like any other table.
-        $state->getQuery()->whereIn(
-            'discussions.rubric_prefix_id',
-            fn ($query) => $query->select('id')->from('rubric_prefixes')->whereIn('slug', $slugs),
-            'and',
-            $negate
-        );
+        $ids = fn ($query) => $query->select('id')->from('rubric_prefixes')->whereIn('slug', $slugs);
+
+        if (! $negate) {
+            $state->getQuery()->whereIn('discussions.rubric_prefix_id', $ids);
+
+            return;
+        }
+
+        // "Not Rumor" includes discussions with no prefix at all, which a bare
+        // NOT IN would drop (NULL is never "not in" anything).
+        $state->getQuery()->where(function ($query) use ($ids) {
+            $query->whereNull('discussions.rubric_prefix_id')
+                ->orWhereNotIn('discussions.rubric_prefix_id', $ids);
+        });
     }
 }
