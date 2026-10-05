@@ -6,7 +6,6 @@ import Icon from 'flarum/common/components/Icon';
 import classList from 'flarum/common/utils/classList';
 import extractText from 'flarum/common/utils/extractText';
 import Stream from 'flarum/common/utils/Stream';
-import Sortable from 'sortablejs';
 import prefixLabel from '../../common/prefixLabel';
 
 const t = (key, params) => app.translator.trans(`ernestdefoe-rubric.admin.${key}`, params);
@@ -369,6 +368,13 @@ export default class RubricPage extends ExtensionPage {
    * two disagree about which node is which.
    */
   sortable(list) {
+    // Core's own lazily loaded copy of sortablejs (~120 KB), not a second one
+    // bundled into this extension's admin.js.
+    import('flarum/admin/utils/loadSortable').then(({ default: Sortable }) => this.attachSortable(Sortable, list));
+  }
+
+  attachSortable(Sortable, list) {
+    if (!list.isConnected) return;
     Sortable.create(list, {
       handle: '.RubricAdmin-handle',
       animation: 150,
