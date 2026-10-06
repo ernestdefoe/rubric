@@ -12,6 +12,7 @@
     "license": "MIT",
     "homepage": "https://github.com/ernestdefoe/rubric",
     "support": {
+        "forum": "https://discuss.flarum.org/d/39988-rubric",
         "issues": "https://github.com/ernestdefoe/rubric/issues",
         "source": "https://github.com/ernestdefoe/rubric"
     },
