@@ -66,9 +66,11 @@ php flarum migrate
 php flarum cache:clear
 ```
 
-## Discuss
+## Support
 
-Questions, ideas and release notes: [Rubric on discuss.flarum.org](https://discuss.flarum.org/d/39988-rubric).
+- **Support forum:** [Rubric on ernestdefoe.online](https://ernestdefoe.online/d/107)
+- **Flarum community:** [Rubric on discuss.flarum.org](https://discuss.flarum.org/d/39988-rubric)
+- **Bug reports:** [GitHub issues](https://github.com/ernestdefoe/rubric/issues)
 
 ## Licence
 
