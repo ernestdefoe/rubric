@@ -54,7 +54,13 @@ export default class RubricPage extends ExtensionPage {
         .request({ method: 'GET', url: app.forum.attribute('apiUrl') + '/tags' })
         .then((res) => {
           this.tags = (res.data || [])
-            .map((d) => ({ id: String(d.id), name: d.attributes.name, color: d.attributes.color, position: d.attributes.position, parent: d.relationships?.parent?.data?.id }))
+            .map((d) => ({
+              id: String(d.id),
+              name: d.attributes.name,
+              color: d.attributes.color,
+              position: d.attributes.position,
+              parent: d.relationships?.parent?.data?.id,
+            }))
             .sort((a, b) => (a.position ?? 999) - (b.position ?? 999) || a.name.localeCompare(b.name));
           m.redraw();
         })
@@ -107,7 +113,12 @@ export default class RubricPage extends ExtensionPage {
             {this.editing && this.editing.id === null ? (
               this.editor()
             ) : (
-              <Button className="Button Button--primary RubricAdmin-add" icon="fas fa-plus" onclick={() => this.open(blank())} disabled={!!this.editing}>
+              <Button
+                className="Button Button--primary RubricAdmin-add"
+                icon="fas fa-plus"
+                onclick={() => this.open(blank())}
+                disabled={!!this.editing}
+              >
                 {t('add_button')}
               </Button>
             )}
@@ -144,8 +155,20 @@ export default class RubricPage extends ExtensionPage {
           <span className="RubricAdmin-where">{this.whereText(p)}</span>
         </span>
         <span className="RubricAdmin-actions">
-          <Button className="Button Button--icon Button--link" icon="fas fa-pencil-alt" aria-label={extractText(t('edit_button'))} onclick={() => this.open({ ...p, icon: p.icon || '', tagIds: (p.tagIds || []).map(String) })} disabled={!!this.editing} />
-          <Button className="Button Button--icon Button--link RubricAdmin-delete" icon="fas fa-trash-alt" aria-label={extractText(t('delete_button'))} onclick={() => this.remove(p)} disabled={!!this.editing || this.busy} />
+          <Button
+            className="Button Button--icon Button--link"
+            icon="fas fa-pencil-alt"
+            aria-label={extractText(t('edit_button'))}
+            onclick={() => this.open({ ...p, icon: p.icon || '', tagIds: (p.tagIds || []).map(String) })}
+            disabled={!!this.editing}
+          />
+          <Button
+            className="Button Button--icon Button--link RubricAdmin-delete"
+            icon="fas fa-trash-alt"
+            aria-label={extractText(t('delete_button'))}
+            onclick={() => this.remove(p)}
+            disabled={!!this.editing || this.busy}
+          />
         </span>
       </li>
     );
@@ -158,13 +181,21 @@ export default class RubricPage extends ExtensionPage {
 
   whereText(p) {
     if (!this.tagsEnabled() || !(p.tagIds || []).length) return t('everywhere');
-    const names = (p.tagIds || []).map((id) => (this.tags || []).find((tag) => tag.id === String(id))).filter(Boolean).map((tag) => tag.name);
+    const names = (p.tagIds || [])
+      .map((id) => (this.tags || []).find((tag) => tag.id === String(id)))
+      .filter(Boolean)
+      .map((tag) => tag.name);
     return t('only_in', { tags: names.join(', ') || '…' });
   }
 
   editor() {
     const d = this.editing;
-    const preview = { ...d, name: d.name.trim() || extractText(t('name_placeholder')), color: /^#[0-9a-f]{6}$/i.test(d.color) ? d.color : '#2563eb', icon: d.icon.trim() };
+    const preview = {
+      ...d,
+      name: d.name.trim() || extractText(t('name_placeholder')),
+      color: /^#[0-9a-f]{6}$/i.test(d.color) ? d.color : '#2563eb',
+      icon: d.icon.trim(),
+    };
 
     return (
       <form
@@ -199,14 +230,26 @@ export default class RubricPage extends ExtensionPage {
 
           <div className="Form-group">
             <label>{t('slug_label')}</label>
-            <input className="FormControl" maxlength="80" value={d.slug} placeholder={slugify(d.name)} oninput={(e) => (d.slug = slugify(e.target.value) || e.target.value.toLowerCase())} />
+            <input
+              className="FormControl"
+              maxlength="80"
+              value={d.slug}
+              placeholder={slugify(d.name)}
+              oninput={(e) => (d.slug = slugify(e.target.value) || e.target.value.toLowerCase())}
+            />
             <p className="helpText">{t('slug_help')}</p>
           </div>
 
           <div className="Form-group">
             <label>{t('color_label')}</label>
             <div className="RubricAdmin-color">
-              <input type="color" className="RubricAdmin-colorInput" value={preview.color} oninput={(e) => (d.color = e.target.value)} aria-label={extractText(t('color_label'))} />
+              <input
+                type="color"
+                className="RubricAdmin-colorInput"
+                value={preview.color}
+                oninput={(e) => (d.color = e.target.value)}
+                aria-label={extractText(t('color_label'))}
+              />
               <input className="FormControl RubricAdmin-colorText" maxlength="7" value={d.color} oninput={(e) => (d.color = e.target.value.trim())} />
               <span className="RubricAdmin-swatches">
                 {SWATCHES.map((c) => (
@@ -321,7 +364,12 @@ export default class RubricPage extends ExtensionPage {
           },
           'required'
         )}
-        <Button className="Button Button--primary RubricAdmin-saveRequired" loading={this.savingRequired} disabled={!this.requiredDirty} onclick={() => this.saveRequired()}>
+        <Button
+          className="Button Button--primary RubricAdmin-saveRequired"
+          loading={this.savingRequired}
+          disabled={!this.requiredDirty}
+          onclick={() => this.saveRequired()}
+        >
           {t('save_required_button')}
         </Button>
       </section>
@@ -347,7 +395,14 @@ export default class RubricPage extends ExtensionPage {
 
   save() {
     const d = this.editing;
-    const body = { name: d.name.trim(), slug: d.slug.trim(), color: d.color.trim(), icon: d.icon.trim(), staffOnly: !!d.staffOnly, tagIds: (d.tagIds || []).map(Number) };
+    const body = {
+      name: d.name.trim(),
+      slug: d.slug.trim(),
+      color: d.color.trim(),
+      icon: d.icon.trim(),
+      staffOnly: !!d.staffOnly,
+      tagIds: (d.tagIds || []).map(Number),
+    };
 
     (d.id === null ? this.request('POST', '', body) : this.request('PATCH', `/${d.id}`, body)).then(() => {
       this.editing = null;

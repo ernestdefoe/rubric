@@ -12,7 +12,6 @@ import prefixLabel, { choosablePrefixes, findPrefix, findPrefixBySlug, prefixReq
 
 const t = (key, params) => app.translator.trans(`ernestdefoe-rubric.forum.${key}`, params);
 
-
 export { default as extend } from './extend';
 
 /** Each part is guarded on its own: one failing must not take the rest, or anyone else's initializer, with it. */
