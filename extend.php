@@ -50,12 +50,12 @@ return [
                 ->nullable()
                 ->writable(fn (Discussion $discussion, Context $context) => $context->creating()
                     || $context->getActor()->can('rename', $discussion))
-                ->get(fn (Discussion $discussion) => $discussion->rubric_prefix_id ? (int) $discussion->rubric_prefix_id : null)
+                ->get(fn (Discussion $discussion) => $discussion->getAttribute('rubric_prefix_id') ? (int) $discussion->getAttribute('rubric_prefix_id') : null)
                 // Only the value is applied here. Whether this member may use
                 // it, in these tags, is decided in ValidatePrefix once the
                 // discussion's tags from the same request are known.
                 ->set(function (Discussion $discussion, $value) {
-                    $discussion->rubric_prefix_id = $value ? (int) $value : null;
+                    $discussion->setAttribute('rubric_prefix_id', $value ? (int) $value : null);
                 }),
         ]),
 

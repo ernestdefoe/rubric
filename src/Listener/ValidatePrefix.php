@@ -40,7 +40,7 @@ class ValidatePrefix
         }
 
         $tagIds = $this->tagIds($discussion, $event->data, $creating);
-        $prefixId = $discussion->rubric_prefix_id ? (int) $discussion->rubric_prefix_id : null;
+        $prefixId = $discussion->getAttribute('rubric_prefix_id') ? (int) $discussion->getAttribute('rubric_prefix_id') : null;
 
         if ($prefixId === null) {
             if ($creating) {
@@ -85,7 +85,11 @@ class ValidatePrefix
             return [];
         }
 
-        return $discussion->tags()->pluck('tags.id')->map(fn ($id) => (int) $id)->all();
+        // The pivot table rather than $discussion->tags(): that relation
+        // belongs to flarum/tags and is added at runtime.
+        return $discussion->getConnection()->table('discussion_tag')
+            ->where('discussion_id', $discussion->id)
+            ->pluck('tag_id')->map(fn ($id) => (int) $id)->all();
     }
 
     /**
