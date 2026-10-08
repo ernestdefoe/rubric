@@ -15,9 +15,9 @@ class PrefixAdminTest extends RubricTestCase
     public static function routes(): array
     {
         return [
-            'list'   => ['GET', '/api/rubric/prefixes', null],
+            'list' => ['GET', '/api/rubric/prefixes', null],
             'create' => ['POST', '/api/rubric/prefixes', ['name' => 'Solved', 'color' => '#16a34a']],
-            'order'  => ['POST', '/api/rubric/prefixes/order', ['order' => [3, 2, 1]]],
+            'order' => ['POST', '/api/rubric/prefixes/order', ['order' => [3, 2, 1]]],
             'update' => ['PATCH', '/api/rubric/prefixes/1', ['name' => 'Gossip', 'color' => '#2563eb']],
             'delete' => ['DELETE', '/api/rubric/prefixes/1', null],
         ];
