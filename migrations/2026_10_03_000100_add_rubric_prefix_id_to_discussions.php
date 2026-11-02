@@ -3,6 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder;
 
+// Raw up/down on purpose: Migration::addColumns() cannot add the foreign key
+// (nullOnDelete) below, and the down must drop that key before the column.
 return [
     'up' => function (Builder $schema) {
         $schema->table('discussions', function (Blueprint $table) {

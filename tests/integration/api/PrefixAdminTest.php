@@ -93,6 +93,22 @@ class PrefixAdminTest extends RubricTestCase
     }
 
     #[Test]
+    public function a_reorder_is_one_update_whatever_the_list_length()
+    {
+        $updates = 0;
+        $this->database()->listen(function ($query) use (&$updates) {
+            if (stripos($query->sql, 'update') === 0 && str_contains($query->sql, 'rubric_prefixes')) {
+                $updates++;
+            }
+        });
+
+        [, $body] = $this->call('POST', '/api/rubric/prefixes/order', 1, ['order' => [2, 3, 1]]);
+
+        $this->assertSame(['official', 'confirmed', 'rumor'], array_column($body['data'], 'slug'));
+        $this->assertSame(1, $updates);
+    }
+
+    #[Test]
     public function deleting_a_prefix_leaves_its_discussions_without_one()
     {
         $this->call('DELETE', '/api/rubric/prefixes/1', 1);
